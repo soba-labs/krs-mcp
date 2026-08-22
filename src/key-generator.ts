@@ -12,7 +12,6 @@
  * This module performs no network requests.
  */
 
-const STATIC_X_API_KEY = 'TopSecretApiKey';
 const KRS_POSITIONS = [193, 8, 327, 501, 112, 74, 409, 226, 16, 306];
 const TIMESTAMP_POSITIONS = [492, 141, 364, 78, 259, 12, 430, 384, 97, 503, 67, 35, 471, 218];
 const CHECKSUM_POSITIONS = [24, 46, 174, 345];
