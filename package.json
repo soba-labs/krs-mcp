@@ -1,0 +1,26 @@
+{
+  "name": "krs-mcp",
+  "version": "0.1.0",
+  "description": "MCP server for the Polish KRS (National Court Register) - search companies by name, KRS, NIP or REGON and fetch official registry extracts.",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=18" },
+  "main": "dist/index.js",
+  "bin": { "krs-mcp": "dist/index.js" },
+  "files": ["dist", "README.md"],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}
