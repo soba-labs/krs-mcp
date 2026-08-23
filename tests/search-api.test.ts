@@ -24,7 +24,7 @@ describe("searchCompanies", () => {
   it("posts to the search endpoint with generated apikey headers", async () => {
     const f = okFetch(sampleResponse);
     await searchCompanies({ name: "Soba Labs" }, f as unknown as typeof fetch);
-    const [url, init] = f.mock.calls[0];
+    const [url, init] = f.mock.calls[0] as [string, RequestInit];
     expect(url).toBe("https://wyszukiwarka-krs-api.ms.gov.pl/api/wyszukiwarka/krs");
     expect(init.method).toBe("POST");
     const headers = init.headers as Record<string, string>;
