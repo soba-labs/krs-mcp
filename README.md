@@ -36,6 +36,8 @@ Add to your MCP configuration:
 }
 ```
 
+(Once the package is published to npm. Until then, use the from-source setup below.)
+
 ### From source
 
 ```sh
@@ -44,7 +46,7 @@ cd krs-mcp
 npm install && npm run build
 ```
 
-`npm test` expects optional fixtures; generate with `node scripts/fetch-test-fixtures.mjs`.
+`npm test` is fully self-contained (synthetic fixtures, no network). Optionally, `node scripts/fetch-test-fixtures.mjs` generates additional local fixtures from live registry data for KRS 0001245101; fixture-dependent test groups auto-skip when these are absent.
 
 ```json
 {
