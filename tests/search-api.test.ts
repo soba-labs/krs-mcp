@@ -56,7 +56,9 @@ describe("searchCompanies", () => {
       { name: "Soba", registries: ["P"], page: 2, pageSize: 50 },
       f as unknown as typeof fetch,
     );
-    const body = JSON.parse((f.mock.calls[0][1] as RequestInit).body as string);
+    const body = JSON.parse(
+      ((f.mock.calls[0] as unknown[])[1] as RequestInit).body as string,
+    );
     expect(body.podmiot.nazwa).toBe("Soba");
     expect(body.rejestr).toEqual(["P"]);
     expect(body.paginacja).toEqual({
