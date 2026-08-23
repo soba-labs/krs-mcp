@@ -25,6 +25,7 @@ export interface SearchHit {
 export interface SearchResult {
   total: number;
   page: number;
+  hasMore: boolean;
   hits: SearchHit[];
 }
 
@@ -108,5 +109,7 @@ export async function searchCompanies(
     isBankruptcy: Boolean(raw.czyUpadlosc),
   }));
 
-  return { total: body.liczbaPodmiotow ?? hits.length, page, hits };
+  const total = body.liczbaPodmiotow ?? hits.length;
+  const hasMore = page * pageSize < total;
+  return { total, page, hasMore, hits };
 }

@@ -13,6 +13,7 @@ const P = {
   siedzibaIAdres: ["odpis", "dane", "dzial1", "siedzibaIAdres"],
   adres: ["odpis", "dane", "dzial1", "siedzibaIAdres", "adres"],
   kapital: ["odpis", "dane", "dzial1", "kapital"],
+  kapitalPSA: ["odpis", "dane", "dzial1", "kapitalPSA"],
   reprezentacja: ["odpis", "dane", "dzial2", "reprezentacja"],
   organNadzoru: ["odpis", "dane", "dzial2", "organNadzoru"],
   prokurenci: ["odpis", "dane", "dzial2", "prokurenci"],
@@ -97,9 +98,22 @@ function entryRank(e: Record<string, unknown>): number {
   return Number.isFinite(n) ? n : -1;
 }
 
+function isWithdrawn(e: Record<string, unknown>): boolean {
+  const n = e.nrWpisuWykr;
+  return n !== undefined && n !== null && n !== "";
+}
+
+function hasContent(value: unknown): boolean {
+  if (Array.isArray(value)) return value.some(hasContent);
+  if (isPlainObject(value)) return Object.values(value).some(hasContent);
+  return value !== undefined && value !== null && value !== "";
+}
+
 function normalize(value: unknown, key?: string, collapseItems = false): unknown {
   if (Array.isArray(value)) {
-    const items = value.map((v) => normalize(v, undefined, collapseItems));
+    const items = value
+      .map((v) => normalize(v, undefined, collapseItems))
+      .filter((v) => v !== undefined);
     const isHistory =
       items.length > 0 &&
       items.every(isPlainObject) &&
@@ -108,8 +122,10 @@ function normalize(value: unknown, key?: string, collapseItems = false): unknown
     if (!isHistory) {
       result = items;
     } else {
-      let best = items[0];
-      for (const it of items) {
+      const active = items.filter((it) => isPlainObject(it) && !isWithdrawn(it));
+      if (active.length === 0) return undefined;
+      let best = active[0];
+      for (const it of active) {
         if (entryRank(it) > entryRank(best)) best = it;
       }
       const stripped: Record<string, unknown> = {};
@@ -127,19 +143,22 @@ function normalize(value: unknown, key?: string, collapseItems = false): unknown
     if (collapseItems && Array.isArray(result)) {
       // Pelny wraps list entries too (PKD items sit under a "pozycja" key);
       // collapse single-key object wrappers on array items.
-      result = result.map((it) => {
-        if (!isPlainObject(it)) return it;
-        const ks = Object.keys(it);
-        if (ks.length === 1 && isPlainObject(it[ks[0]])) return it[ks[0]];
-        return it;
-      });
+      result = result
+        .map((it) => {
+          if (!isPlainObject(it)) return it;
+          const ks = Object.keys(it);
+          if (ks.length === 1 && isPlainObject(it[ks[0]])) return it[ks[0]];
+          return it;
+        })
+        .filter(hasContent);
     }
     return result;
   }
   if (isPlainObject(value)) {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value)) {
-      out[k] = normalize(v, k, collapseItems);
+      const normalized = normalize(v, k, collapseItems);
+      if (normalized !== undefined) out[k] = normalized;
     }
     return out;
   }
@@ -204,7 +223,7 @@ export function formatSearchResults(r: SearchResult, queryDescription: string): 
       (hit.isOpp ? " [OPP]" : "") + (hit.isBankruptcy ? " [BANKRUPTCY]" : "");
     lines.push(`${hit.krs.padStart(10, "0")} | ${hit.name} | ${hit.city} | ${hit.registry}${flags}`);
   }
-  if (r.total > r.hits.length) {
+  if (r.hasMore) {
     lines.push(
       `(showing ${r.hits.length} of ${r.total} results; use page=${r.page + 1} for more)`,
     );
@@ -281,16 +300,18 @@ export function formatOdpis(
   }
 
   // Share capital
-  const kapitalRaw = asRecord(get(odpis, P.kapital));
+  const kapitalRaw =
+    asRecord(get(odpis, P.kapital)) ?? asRecord(get(odpis, P.kapitalPSA));
   if (kapitalRaw !== undefined) {
     const kapital = kapitalRaw;
-    const kwotaZakladowy = money(kapital.wysokoscKapitaluZakladowego);
+    const kwotaZakladowy = money(
+      kapital.wysokoscKapitaluZakladowego ?? kapital.wysokoscKapitaluAkcyjnego,
+    );
     const wplacony = money(kapital.czescKapitaluWplaconegoPokrytego);
     const jednaAkcja = money(kapital.wartoscJednejAkcji);
-    const liczbaAkcji =
-      typeof kapital.lacznaLiczbaAkcjiUdzialow === "string"
-        ? kapital.lacznaLiczbaAkcjiUdzialow
-        : "";
+    const liczbaAkcjiRaw =
+      kapital.lacznaLiczbaAkcjiUdzialow ?? kapital.lacznaLiczbaAkcji;
+    const liczbaAkcji = typeof liczbaAkcjiRaw === "string" ? liczbaAkcjiRaw : "";
     if (kwotaZakladowy || liczbaAkcji) {
       lines.push("", `## Share capital`);
       if (kwotaZakladowy) lines.push(`Share capital: ${kwotaZakladowy}`);

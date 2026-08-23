@@ -40,6 +40,7 @@ describe("searchCompanies", () => {
       okFetch(sampleResponse) as unknown as typeof fetch,
     );
     expect(r.total).toBe(17);
+    expect(r.hasMore).toBe(false);
     expect(r.hits[0]).toEqual({
       krs: "0001245101",
       name: "SOBA LABS PROSTA SPÓŁKA AKCYJNA",
@@ -48,6 +49,20 @@ describe("searchCompanies", () => {
       isOpp: false,
       isBankruptcy: false,
     });
+  });
+
+  it("reports whether another page exists", async () => {
+    const response = { ...sampleResponse, liczbaPodmiotow: 150 };
+    const middle = await searchCompanies(
+      { name: "Soba", page: 2, pageSize: 50 },
+      okFetch(response) as unknown as typeof fetch,
+    );
+    const final = await searchCompanies(
+      { name: "Soba", page: 3, pageSize: 50 },
+      okFetch(response) as unknown as typeof fetch,
+    );
+    expect(middle.hasMore).toBe(true);
+    expect(final.hasMore).toBe(false);
   });
 
   it("builds payload from params with defaults", async () => {

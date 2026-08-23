@@ -146,3 +146,5 @@ docs/
 # Test fixtures: odpis captures are fetched locally, never committed
 tests/fixtures/*
 !tests/fixtures/key-vectors.json
+!tests/fixtures/odpis-aktualny-synthetic.json
+!tests/fixtures/odpis-pelny-synthetic.json

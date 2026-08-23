@@ -1,12 +1,11 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { existsSync, readFileSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 import { extractBoard, formatOdpis, formatSearchResults } from "../src/format.js";
 import type { SearchResult } from "../src/clients/search-api.js";
 
 const fixtureDir = join(dirname(fileURLToPath(import.meta.url)), "fixtures");
-const hasFixture = (name: string) => existsSync(join(fixtureDir, name));
 
 function loadFixture(name: string): Record<string, unknown> {
   return JSON.parse(readFileSync(join(fixtureDir, name), "utf-8")) as Record<string, unknown>;
@@ -16,6 +15,7 @@ describe("formatSearchResults", () => {
   const result: SearchResult = {
     total: 157,
     page: 1,
+    hasMore: true,
     hits: [
       {
         krs: "1245101",
@@ -44,39 +44,44 @@ describe("formatSearchResults", () => {
   });
 
   it("omits the hint when everything fits on one page", () => {
-    const single: SearchResult = { ...result, total: 1 };
+    const single: SearchResult = { ...result, total: 1, hasMore: false };
     expect(formatSearchResults(single, "Soba Labs")).not.toContain("showing");
+  });
+
+  it("omits the next-page hint on the final page", () => {
+    const finalPage: SearchResult = { ...result, total: 150, page: 3, hasMore: false };
+    expect(formatSearchResults(finalPage, "Soba Labs")).not.toContain("page=4");
   });
 });
 
-describe.skipIf(!hasFixture("odpis-aktualny-sobalabs.json"))("formatOdpis", () => {
+describe("formatOdpis", () => {
   let out = "";
   beforeEach(() => {
-    out = formatOdpis(loadFixture("odpis-aktualny-sobalabs.json"), "aktualny");
+    out = formatOdpis(loadFixture("odpis-aktualny-synthetic.json"), "aktualny");
   });
 
   it("includes company identity fields", () => {
-    expect(out).toContain('Name: SOBA LABS PROSTA SPÓŁKA AKCYJNA');
-    expect(out).toContain("0001245101");
-    expect(out).toContain("8971973376");
-    expect(out).toContain("54494280900000");
+    expect(out).toContain("Name: SYNTHETIC PSA");
+    expect(out).toContain("0001234567");
+    expect(out).toContain("1111111111");
+    expect(out).toContain("22222222222222");
     expect(out).toContain("Legal form: PROSTA SPÓŁKA AKCYJNA");
   });
 
   it("includes address and city", () => {
     expect(out).toContain("WROCŁAW");
-    expect(out).toContain("MARSZ. JÓZEFA PIŁSUDSKIEGO");
-    expect(out).toContain("50-019");
+    expect(out).toContain("UL. TESTOWA");
+    expect(out).toContain("50-001");
   });
 
   it("includes board members", () => {
     expect(out).toContain("PREZES ZARZĄDU");
-    expect(out).toContain("B******");
+    expect(out).toContain("ALICE ACTIVE");
   });
 
   it("includes PKD codes", () => {
     expect(out).toContain("62.10.B");
-    expect(out).toContain("POZOSTAŁA DZIAŁALNOŚĆ W ZAKRESIE PROGRAMOWANIA");
+    expect(out).toContain("PROGRAMOWANIE");
     expect(out).toContain("(primary)");
   });
 
@@ -85,9 +90,14 @@ describe.skipIf(!hasFixture("odpis-aktualny-sobalabs.json"))("formatOdpis", () =
   });
 
   it("uses English labels only (Polish data values stay verbatim)", () => {
-    expect(out).toContain("As of: 15.06.2026");
-    expect(out).toContain("Representation: DO SKŁADANIA OŚWIADCZEŃ");
+    expect(out).toContain("As of: 23.08.2026");
+    expect(out).toContain("Representation: KAŻDY CZŁONEK SAMODZIELNIE");
     expect(out).not.toMatch(/Nazwa:|Adres:|Forma prawna:|Kapitał zakładowy:/);
+  });
+
+  it("includes PSA share capital", () => {
+    expect(out).toContain("Share capital: 5000,00 PLN");
+    expect(out).toContain("Number of shares/units: 1000");
   });
 });
 
@@ -109,14 +119,14 @@ describe("formatOdpis with empty dzial sections", () => {
   });
 });
 
-describe.skipIf(!hasFixture("odpis-aktualny-sobalabs.json"))("extractBoard", () => {
+describe("extractBoard", () => {
   it("returns only the board section", () => {
-    const board = extractBoard(loadFixture("odpis-aktualny-sobalabs.json"));
+    const board = extractBoard(loadFixture("odpis-aktualny-synthetic.json"));
     expect(board).toContain("ZARZĄD");
-    expect(board).toContain("B******");
-    expect(board).toContain("DO SKŁADANIA OŚWIADCZEŃ");
+    expect(board).toContain("ALICE ACTIVE");
+    expect(board).toContain("KAŻDY CZŁONEK SAMODZIELNIE");
     expect(board).not.toContain("PROGRAMOWANIE");
-    expect(board).not.toContain("8971973376");
+    expect(board).not.toContain("1111111111");
   });
 
   it("returns empty-state text when nothing found", () => {
@@ -124,51 +134,58 @@ describe.skipIf(!hasFixture("odpis-aktualny-sobalabs.json"))("extractBoard", () 
   });
 });
 
-describe.skipIf(!hasFixture("odpis-pelny-sobalabs.json"))("formatOdpis (pelny shape)", () => {
+describe("formatOdpis (pelny shape)", () => {
   let out = "";
   beforeEach(() => {
-    out = formatOdpis(loadFixture("odpis-pelny-sobalabs.json"), "pelny");
+    out = formatOdpis(loadFixture("odpis-pelny-synthetic.json"), "pelny");
   });
 
   it("unwraps history arrays into current values", () => {
-    expect(out).toContain("SOBA LABS PROSTA SPÓŁKA AKCYJNA");
-    expect(out).toContain("0001245101");
-    expect(out).toContain("8971973376");
-    expect(out).toContain("54494280900000");
+    expect(out).toContain("SYNTHETIC PSA");
+    expect(out).toContain("0001234567");
+    expect(out).toContain("1111111111");
+    expect(out).toContain("22222222222222");
     expect(out).toContain("PROSTA SPÓŁKA AKCYJNA");
-    expect(out).toContain("As of: 15.06.2026");
+    expect(out).toContain("As of: 23.08.2026");
   });
 
   it("renders address", () => {
-    expect(out).toContain("MARSZ. JÓZEFA PIŁSUDSKIEGO 91");
-    expect(out).toContain("50-019 WROCŁAW");
+    expect(out).toContain("UL. TESTOWA 1");
+    expect(out).toContain("50-001 WROCŁAW");
   });
 
   it("renders PKD from wrapped pozycja entries", () => {
     expect(out).toContain("62.10.B");
-    expect(out).toContain("POZOSTAŁA DZIAŁALNOŚĆ W ZAKRESIE PROGRAMOWANIA");
+    expect(out).toContain("PROGRAMOWANIE");
     expect(out).toContain("(primary)");
   });
 
   it("renders board members", () => {
     expect(out).toContain("Board: ZARZĄD");
     expect(out).toContain("PREZES ZARZĄDU");
-    expect(out).toContain("B******");
-    expect(out).toContain("S***** J**");
+    expect(out).toContain("ALICE ACTIVE");
+    expect(out).not.toContain("BOB WITHDRAWN");
   });
 
   it("picks the entry with the highest nrWpisuWprow when history has multiple entries", () => {
-    // identyfikatory history: wprow 2 (withdrawn at 3, regon missing) vs wprow 3 (both ids)
-    expect(out).toContain("REGON: 54494280900000");
+    // The first identifier set is withdrawn; the later active set contains both identifiers.
+    expect(out).toContain("REGON: 22222222222222");
+  });
+
+  it("includes PSA share capital", () => {
+    expect(out).toContain("Share capital: 5000,00 PLN");
+    expect(out).toContain("Number of shares/units: 1000");
   });
 });
 
-describe.skipIf(!hasFixture("odpis-pelny-sobalabs.json"))("extractBoard (pelny shape)", () => {
+describe("extractBoard (pelny shape)", () => {
   it("works on the pelny shape", () => {
-    const board = extractBoard(loadFixture("odpis-pelny-sobalabs.json"));
+    const board = extractBoard(loadFixture("odpis-pelny-synthetic.json"));
     expect(board).toContain("ZARZĄD");
     expect(board).toContain("PREZES ZARZĄDU");
-    expect(board).toContain("B******");
+    expect(board).toContain("ALICE ACTIVE");
+    expect(board).not.toContain("BOB WITHDRAWN");
+    expect(board.split("\n").filter((line) => line.startsWith("- "))).toHaveLength(1);
     expect(board).not.toContain("PROGRAMOWANIE");
   });
 });

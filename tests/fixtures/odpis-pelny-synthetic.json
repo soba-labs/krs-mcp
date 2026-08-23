@@ -1,0 +1,166 @@
+{
+  "odpis": {
+    "rodzaj": "Pełny",
+    "naglowekP": {
+      "numerKRS": "1234567",
+      "stanZDnia": "23.08.2026"
+    },
+    "dane": {
+      "dzial1": {
+        "danePodmiotu": {
+          "formaPrawna": [
+            {
+              "formaPrawna": "PROSTA SPÓŁKA AKCYJNA",
+              "nrWpisuWprow": "1"
+            }
+          ],
+          "identyfikatory": [
+            {
+              "identyfikatory": {
+                "nip": "0000000000"
+              },
+              "nrWpisuWprow": "1",
+              "nrWpisuWykr": "2"
+            },
+            {
+              "identyfikatory": {
+                "nip": "1111111111",
+                "regon": "22222222222222"
+              },
+              "nrWpisuWprow": "2"
+            }
+          ],
+          "nazwa": [
+            {
+              "nazwa": "SYNTHETIC PSA",
+              "nrWpisuWprow": "1"
+            }
+          ]
+        },
+        "siedzibaIAdres": {
+          "siedziba": [
+            {
+              "kraj": "POLSKA",
+              "nrWpisuWprow": "1"
+            }
+          ],
+          "adres": [
+            {
+              "ulica": "UL. TESTOWA",
+              "nrDomu": "1",
+              "miejscowosc": "WROCŁAW",
+              "kodPocztowy": "50-001",
+              "poczta": "WROCŁAW",
+              "nrWpisuWprow": "1"
+            }
+          ]
+        },
+        "kapitalPSA": {
+          "wysokoscKapitaluAkcyjnego": [
+            {
+              "wartosc": "5000,00",
+              "waluta": "PLN",
+              "nrWpisuWprow": "1"
+            }
+          ],
+          "lacznaLiczbaAkcji": [
+            {
+              "lacznaLiczbaAkcji": "1000",
+              "nrWpisuWprow": "1"
+            }
+          ]
+        }
+      },
+      "dzial2": {
+        "reprezentacja": [
+          {
+            "nazwaOrganu": [
+              {
+                "nazwaOrganu": "ZARZĄD",
+                "nrWpisuWprow": "1"
+              }
+            ],
+            "sposobReprezentacji": [
+              {
+                "sposobReprezentacji": "KAŻDY CZŁONEK SAMODZIELNIE",
+                "nrWpisuWprow": "1"
+              }
+            ],
+            "sklad": [
+              {
+                "nazwisko": [
+                  {
+                    "nazwisko": {
+                      "nazwiskoICzlon": "WITHDRAWN"
+                    },
+                    "nrWpisuWprow": "1",
+                    "nrWpisuWykr": "2"
+                  }
+                ],
+                "imiona": [
+                  {
+                    "imiona": {
+                      "imie": "BOB"
+                    },
+                    "nrWpisuWprow": "1",
+                    "nrWpisuWykr": "2"
+                  }
+                ],
+                "funkcjaWOrganie": [
+                  {
+                    "funkcjaWOrganie": "CZŁONEK ZARZĄDU",
+                    "nrWpisuWprow": "1",
+                    "nrWpisuWykr": "2"
+                  }
+                ],
+                "dataZawieszeniaDo": []
+              },
+              {
+                "nazwisko": [
+                  {
+                    "nazwisko": {
+                      "nazwiskoICzlon": "ACTIVE"
+                    },
+                    "nrWpisuWprow": "2"
+                  }
+                ],
+                "imiona": [
+                  {
+                    "imiona": {
+                      "imie": "ALICE"
+                    },
+                    "nrWpisuWprow": "2"
+                  }
+                ],
+                "funkcjaWOrganie": [
+                  {
+                    "funkcjaWOrganie": "PREZES ZARZĄDU",
+                    "nrWpisuWprow": "2"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "dzial3": {
+        "przedmiotDzialalnosci": {
+          "przedmiotPrzewazajacejDzialalnosci": [
+            {
+              "pozycja": [
+                {
+                  "kodDzial": "62",
+                  "kodKlasa": "10",
+                  "kodPodklasa": "B",
+                  "opis": "PROGRAMOWANIE",
+                  "nrWpisuWprow": "1"
+                }
+              ]
+            }
+          ],
+          "przedmiotPozostalejDzialalnosci": []
+        }
+      }
+    }
+  }
+}
