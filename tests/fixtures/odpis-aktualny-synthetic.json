@@ -1,0 +1,70 @@
+{
+  "odpis": {
+    "rodzaj": "Aktualny",
+    "naglowekA": {
+      "numerKRS": "1234567",
+      "stanZDnia": "23.08.2026"
+    },
+    "dane": {
+      "dzial1": {
+        "danePodmiotu": {
+          "formaPrawna": "PROSTA SPÓŁKA AKCYJNA",
+          "identyfikatory": {
+            "nip": "1111111111",
+            "regon": "22222222222222"
+          },
+          "nazwa": "SYNTHETIC PSA"
+        },
+        "siedzibaIAdres": {
+          "siedziba": {
+            "kraj": "POLSKA"
+          },
+          "adres": {
+            "ulica": "UL. TESTOWA",
+            "nrDomu": "1",
+            "miejscowosc": "WROCŁAW",
+            "kodPocztowy": "50-001",
+            "poczta": "WROCŁAW"
+          }
+        },
+        "kapitalPSA": {
+          "wysokoscKapitaluAkcyjnego": {
+            "wartosc": "5000,00",
+            "waluta": "PLN"
+          },
+          "lacznaLiczbaAkcji": "1000"
+        }
+      },
+      "dzial2": {
+        "reprezentacja": {
+          "nazwaOrganu": "ZARZĄD",
+          "sposobReprezentacji": "KAŻDY CZŁONEK SAMODZIELNIE",
+          "sklad": [
+            {
+              "nazwisko": {
+                "nazwiskoICzlon": "ACTIVE"
+              },
+              "imiona": {
+                "imie": "ALICE"
+              },
+              "funkcjaWOrganie": "PREZES ZARZĄDU"
+            }
+          ]
+        }
+      },
+      "dzial3": {
+        "przedmiotDzialalnosci": {
+          "przedmiotPrzewazajacejDzialalnosci": [
+            {
+              "kodDzial": "62",
+              "kodKlasa": "10",
+              "kodPodklasa": "B",
+              "opis": "PROGRAMOWANIE"
+            }
+          ],
+          "przedmiotPozostalejDzialalnosci": []
+        }
+      }
+    }
+  }
+}
