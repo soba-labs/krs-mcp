@@ -17,7 +17,7 @@ const sampleResponse = {
 };
 
 function okFetch(body: unknown) {
-  return vi.fn(async () => new Response(JSON.stringify(body), { status: 200 }));
+  return vi.fn(async (_url: unknown, _init?: unknown) => new Response(JSON.stringify(body), { status: 200 }));
 }
 
 describe("searchCompanies", () => {
@@ -69,7 +69,7 @@ describe("searchCompanies", () => {
   });
 
   it("throws structured error on non-200", async () => {
-    const f = vi.fn(async () => new Response("blocked", { status: 403 }));
+    const f = vi.fn(async (_url: unknown, _init?: unknown) => new Response("blocked", { status: 403 }));
     await expect(
       searchCompanies({ name: "x" }, f as unknown as typeof fetch),
     ).rejects.toThrow(/search API returned 403/);
