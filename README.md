@@ -75,4 +75,4 @@ This project is not affiliated with, endorsed by, or connected to the Polish Min
 
 ---
 
-Built and maintained by [Soba Labs](https://sobalabs.dev).
+Built and maintained by [Soba Labs](https://sobalabs.ai).
