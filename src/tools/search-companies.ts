@@ -11,7 +11,7 @@ function optionalCriterion(schema: z.ZodString) {
   );
 }
 
-const inputSchema = z
+const inputSchemaBase = z
   .object({
     query: optionalCriterion(z.string().trim().min(1)).describe(
         "Company name or partial name. This is the only tool that can resolve a company NAME to a KRS number.",
@@ -33,10 +33,26 @@ const inputSchema = z
       .describe("Registries to search: P = entrepreneurs, S = associations."),
     page: z.number().int().min(1).default(1),
     pageSize: z.number().int().min(1).max(100).default(100),
-  })
-  .refine((v) => [v.query, v.krs, v.nip, v.regon].some((criterion) => criterion !== undefined), {
-    message: "Provide at least one search criterion: query (name), krs, nip or regon.",
   });
+
+// Client models often guess "name"/"nazwa" from the tool description instead of
+// "query" — accept both so a guess never becomes a validation error.
+const withNameAlias = z.preprocess((args) => {
+  if (args !== null && typeof args === "object" && !Array.isArray(args)) {
+    const a = { ...(args as Record<string, unknown>) };
+    if (a.query === undefined && typeof a.name === "string") a.query = a.name;
+    if (a.query === undefined && typeof a.nazwa === "string") a.query = a.nazwa;
+    return a;
+  }
+  return args;
+}, inputSchemaBase);
+
+const inputSchema = withNameAlias.refine(
+  (v) => [v.query, v.krs, v.nip, v.regon].some((criterion) => criterion !== undefined),
+  {
+    message: "Provide at least one search criterion: query (name), krs, nip or regon.",
+  },
+);
 
 export function registerSearchCompanies(server: McpServer) {
   server.registerTool(

@@ -100,6 +100,20 @@ describe("krs-mcp tools", () => {
     expect(text).toContain("SOBA LABS");
   });
 
+  it("search_companies accepts name/nazwa as aliases for query", async () => {
+    for (const alias of ["name", "nazwa"]) {
+      const client = await connect(okFetch(sobalabsSearch));
+      const res = await client.callTool({
+        name: "search_companies",
+        arguments: { [alias]: "Soba Labs" },
+      });
+      expect(res.isError).toBeFalsy();
+      const text = (res.content as Array<{ text: string }>)[0].text;
+      expect(text).toContain("0001245101");
+      await client.close();
+    }
+  });
+
   it("search_companies without criteria returns an actionable error", async () => {
     const client = await connect(okFetch(sobalabsSearch));
     const res = await client.callTool({ name: "search_companies", arguments: {} });
