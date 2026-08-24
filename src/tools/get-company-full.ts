@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { formatOdpis } from "../format.js";
 import { getOdpisOrError, textResult } from "./common.js";
 
 const inputSchema = z.object({
@@ -14,13 +13,13 @@ export function registerGetCompanyFull(server: McpServer) {
     {
       title: "Get full KRS extract",
       description:
-        "Fetch the FULL (pelny) official extract of a Polish company from the KRS registry by its 1-10 digit KRS number — includes historical sections. Much larger than the current extract; use get_company unless history is needed.",
+        "Fetch the FULL (pelny) official semantic JSON extract of a Polish company from the KRS registry by its 1-10 digit KRS number. Preserves all historical entries. Much larger than the current extract; use get_company unless history is needed.",
       inputSchema,
     },
     async ({ krs, rejestr }) => {
       const result = await getOdpisOrError(krs, rejestr, true);
       if (!result.ok) return textResult(result.error, true);
-      return textResult(formatOdpis(result.odpis, "pelny"));
+      return textResult(JSON.stringify(result.odpis, null, 2));
     },
   );
 }

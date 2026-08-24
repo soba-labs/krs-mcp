@@ -214,6 +214,29 @@ export function extractBoard(odpisRaw: Record<string, unknown>): string {
   return lines.join("\n");
 }
 
+function proxyLines(odpis: Record<string, unknown>): string[] {
+  const prokurenci = list(odpis, P.prokurenci);
+  if (prokurenci.length === 0) return [];
+
+  const lines = [`## Proxies`];
+  for (const prokurent of prokurenci) {
+    const rodzajProkury =
+      typeof prokurent.rodzajProkury === "string" ? ` (${prokurent.rodzajProkury})` : "";
+    lines.push(`- proxy: ${personLine(prokurent)}${rodzajProkury}`);
+  }
+  return lines;
+}
+
+export function extractBoardAndProxies(odpisRaw: Record<string, unknown>): string {
+  const odpis = normalize(odpisRaw, undefined, isPelny(odpisRaw)) as Record<string, unknown>;
+  const board = extractBoard(odpis);
+  const proxies = proxyLines(odpis);
+
+  if (proxies.length === 0) return board;
+  if (board === "No board information found.") return proxies.join("\n");
+  return `${board}\n\n${proxies.join("\n")}`;
+}
+
 export function formatSearchResults(r: SearchResult, queryDescription: string): string {
   const lines: string[] = [
     `${r.total} result(s) for "${queryDescription}" — page ${r.page}`,
@@ -289,15 +312,8 @@ export function formatOdpis(
   lines.push("", extractBoard(odpis));
 
   // Prokurenci
-  const prokurenci = list(odpis, P.prokurenci);
-  if (prokurenci.length > 0) {
-    lines.push("", `## Proxies`);
-    for (const prokurent of prokurenci) {
-      const rodzajProkury =
-        typeof prokurent.rodzajProkury === "string" ? ` (${prokurent.rodzajProkury})` : "";
-      lines.push(`- proxy: ${personLine(prokurent)}${rodzajProkury}`);
-    }
-  }
+  const proxies = proxyLines(odpis);
+  if (proxies.length > 0) lines.push("", ...proxies);
 
   // Share capital
   const kapitalRaw =

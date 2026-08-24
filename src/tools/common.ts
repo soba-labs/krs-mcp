@@ -2,7 +2,7 @@ import { getOdpis, padKrs, type Registry } from "../clients/krs-api.js";
 
 export function errorText(err: unknown): string {
   const msg = err instanceof Error ? err.message : String(err);
-  if (msg.includes("returned 403")) {
+  if (msg.includes("KRS search API returned 403")) {
     return "KRS API request failed: the search endpoint refused the request (403) — possibly bot protection. Retry later or narrow the query.";
   }
   return `KRS API request failed: ${msg}`;

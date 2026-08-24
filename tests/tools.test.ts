@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
@@ -44,10 +45,22 @@ const odpisFixture = {
             },
           ],
         },
+        prokurenci: [
+          {
+            funkcjaWOrganie: "PROKURENT",
+            imiona: { imie: "ANNA" },
+            nazwisko: { nazwiskoICzlon: "NOWAK" },
+            rodzajProkury: "SAMOISTNA",
+          },
+        ],
       },
     },
   },
 };
+
+const fullOdpisFixture = JSON.parse(
+  readFileSync(new URL("./fixtures/odpis-pelny-synthetic.json", import.meta.url), "utf8"),
+) as Record<string, unknown>;
 
 async function connect(fetchMock: ReturnType<typeof vi.fn>): Promise<Client> {
   vi.stubGlobal("fetch", fetchMock);
@@ -95,6 +108,28 @@ describe("krs-mcp tools", () => {
     expect(text).toMatch(/query|krs|nip|regon/i);
   });
 
+  it("search_companies accepts a valid KRS when query is empty", async () => {
+    const fetchMock = okFetch(sobalabsSearch);
+    const client = await connect(fetchMock);
+    const res = await client.callTool({
+      name: "search_companies",
+      arguments: { query: "", krs: "1245101" },
+    });
+    expect(res.isError).toBeFalsy();
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("search_companies rejects a non-digit KRS before calling the API", async () => {
+    const fetchMock = okFetch(sobalabsSearch);
+    const client = await connect(fetchMock);
+    const res = await client.callTool({
+      name: "search_companies",
+      arguments: { krs: "not-digits" },
+    });
+    expect(res.isError).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("get_company with 404 reports not found", async () => {
     const client = await connect(okFetch({}, 404));
     const res = await client.callTool({
@@ -106,16 +141,17 @@ describe("krs-mcp tools", () => {
     expect(text.toLowerCase()).toContain("not found");
   });
 
-  it("get_company_full formats the full odpis", async () => {
-    const client = await connect(okFetch(odpisFixture));
+  it("get_company_full returns the complete semantic JSON with history", async () => {
+    const client = await connect(okFetch(fullOdpisFixture));
     const res = await client.callTool({
       name: "get_company_full",
       arguments: { krs: "1245101", rejestr: "P" },
     });
     expect(res.isError).toBeFalsy();
     const text = (res.content as Array<{ text: string }>)[0].text;
-    expect(text).toContain("ODPIS");
-    expect(text).toContain("SOBA LABS");
+    expect(JSON.parse(text)).toEqual(fullOdpisFixture);
+    expect(text).toContain("BOB");
+    expect(text).toContain("nrWpisuWykr");
   });
 
   it("get_board extracts board members", async () => {
@@ -128,6 +164,8 @@ describe("krs-mcp tools", () => {
     const text = (res.content as Array<{ text: string }>)[0].text;
     expect(text).toContain("JAN KOWALSKI");
     expect(text).toContain("PREZES ZARZĄDU");
+    expect(text).toContain("ANNA NOWAK");
+    expect(text).toContain("SAMOISTNA");
   });
 
   it("surfaces API errors with status in the message", async () => {
@@ -139,5 +177,17 @@ describe("krs-mcp tools", () => {
     expect(res.isError).toBe(true);
     const text = (res.content as Array<{ text: string }>)[0].text;
     expect(text).toContain("403");
+  });
+
+  it("does not label an extract API 403 as search bot protection", async () => {
+    const client = await connect(okFetch("blocked", 403));
+    const res = await client.callTool({
+      name: "get_company",
+      arguments: { krs: "1245101" },
+    });
+    expect(res.isError).toBe(true);
+    const text = (res.content as Array<{ text: string }>)[0].text;
+    expect(text).toContain("403");
+    expect(text).not.toContain("search endpoint");
   });
 });

@@ -1,6 +1,6 @@
 # krs-mcp
 
-An [MCP](https://modelcontextprotocol.io) server for the Polish **KRS** (Krajowy Rejestr Sądowy — National Court Register). It lets any MCP-capable AI client search Polish companies by name, KRS, NIP or REGON, and fetch official registry extracts (odpis aktualny / odpis pełny) as clean markdown.
+An [MCP](https://modelcontextprotocol.io) server for the Polish **KRS** (Krajowy Rejestr Sądowy — National Court Register). It lets any MCP-capable AI client search Polish companies by name, KRS, NIP or REGON, and fetch official current and full registry extracts.
 
 All four tools are read-only and require no API key, no account, and no configuration. KRS data is public record.
 
@@ -10,14 +10,14 @@ All four tools are read-only and require no API key, no account, and no configur
 |---|---|---|
 | `search_companies` | `query` (name or partial name) and/or `krs`, `nip`, `regon`; optional `registries` (array of registry types: `P` = entrepreneurs, `S` = associations; defaults to `["P", "S"]`, both searched), `page`, `pageSize` | Matching entities with their zero-padded 10-digit KRS numbers, city, registry, bankruptcy flag; paginated. **Use this first to resolve a company name to a KRS number.** |
 | `get_company` | `krs` (1–10 digits, padding applied automatically), `rejestr` (`P`/`S`, default `P`) | Current official extract (*odpis aktualny*): identity, address, board, capital, PKD — as markdown |
-| `get_company_full` | same as `get_company` | Full official extract (*odpis pełny*) including historical sections. Much larger; prefer `get_company` unless you need history |
+| `get_company_full` | same as `get_company` | Full official extract (*odpis pełny*) as semantic JSON, preserving all historical entries. Much larger; prefer `get_company` unless you need history |
 | `get_board` | same as `get_company` | Slim view of just the board, supervisory bodies and proxies (prokurenci) |
 
 ## How it works
 
 - **Search** goes through the Ministry of Justice's public search service — the same backend that powers [wyszukiwarka-krs.ms.gov.pl](https://wyszukiwarka-krs.ms.gov.pl). The frontend signs its requests with a generated request token; krs-mcp reproduces that algorithm offline, so no credentials are needed.
 - **Extracts (odpisy)** come from the Ministry of Justice's official open API at [api-krs.ms.gov.pl](https://api-krs.ms.gov.pl) — free and keyless. The data is public record (CC0).
-- Responses are formatted into compact, LLM-friendly markdown rather than raw JSON dumps.
+- Search results and current extracts are formatted as compact, LLM-friendly markdown. Full extracts remain semantic JSON so no historical entries are discarded.
 
 ## Setup
 
@@ -46,7 +46,7 @@ cd krs-mcp
 npm install && npm run build
 ```
 
-`npm test` is fully self-contained (synthetic fixtures, no network). Optionally, `node scripts/fetch-test-fixtures.mjs` generates additional local fixtures from live registry data for KRS 0001245101; fixture-dependent test groups auto-skip when these are absent.
+`npm test` is fully self-contained (synthetic fixtures, no network). Optionally, `node scripts/fetch-test-fixtures.mjs` refreshes ignored live captures for manual comparison with KRS 0001245101.
 
 ```json
 {

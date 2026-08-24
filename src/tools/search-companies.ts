@@ -4,26 +4,37 @@ import { searchCompanies } from "../clients/search-api.js";
 import { formatSearchResults } from "../format.js";
 import { errorText, textResult } from "./common.js";
 
+function optionalCriterion(schema: z.ZodString) {
+  return z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    schema.optional(),
+  );
+}
+
 const inputSchema = z
   .object({
-    query: z
-      .string()
-      .optional()
-      .describe(
+    query: optionalCriterion(z.string().trim().min(1)).describe(
         "Company name or partial name. This is the only tool that can resolve a company NAME to a KRS number.",
       ),
-    krs: z.string().optional().describe("Exact KRS number (digits only)."),
-    nip: z.string().optional(),
-    regon: z.string().optional(),
+    krs: optionalCriterion(z.string().trim().regex(/^\d{1,10}$/)).describe(
+      "Exact KRS number, 1-10 digits.",
+    ),
+    nip: optionalCriterion(z.string().trim().regex(/^\d{10}$/)).describe(
+      "Exact NIP number, 10 digits.",
+    ),
+    regon: optionalCriterion(z.string().trim().regex(/^(?:\d{9}|\d{14})$/)).describe(
+      "Exact REGON number, 9 or 14 digits.",
+    ),
     registries: z
       .enum(["P", "S"])
       .array()
+      .min(1)
       .default(["P", "S"])
       .describe("Registries to search: P = entrepreneurs, S = associations."),
     page: z.number().int().min(1).default(1),
     pageSize: z.number().int().min(1).max(100).default(100),
   })
-  .refine((v) => Boolean(v.query ?? v.krs ?? v.nip ?? v.regon), {
+  .refine((v) => [v.query, v.krs, v.nip, v.regon].some((criterion) => criterion !== undefined), {
     message: "Provide at least one search criterion: query (name), krs, nip or regon.",
   });
 

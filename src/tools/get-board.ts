@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { extractBoard } from "../format.js";
+import { extractBoardAndProxies } from "../format.js";
 import { getOdpisOrError, textResult } from "./common.js";
 
 const inputSchema = z.object({
@@ -20,7 +20,7 @@ export function registerGetBoard(server: McpServer) {
     async ({ krs, rejestr }) => {
       const result = await getOdpisOrError(krs, rejestr, false);
       if (!result.ok) return textResult(result.error, true);
-      return textResult(extractBoard(result.odpis));
+      return textResult(extractBoardAndProxies(result.odpis));
     },
   );
 }
