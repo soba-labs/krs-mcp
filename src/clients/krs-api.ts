@@ -8,6 +8,11 @@ export function padKrs(krs: string): string {
   return krs.padStart(10, "0");
 }
 
+export function getOdpisUrl(krs: string, registry: Registry, full: boolean): string {
+  const endpoint = full ? "OdpisPelny" : "OdpisAktualny";
+  return `${API_BASE}/${endpoint}/${padKrs(krs)}?rejestr=${registry}&format=json`;
+}
+
 const pacer = new Pacer(500);
 
 export async function getOdpis(
@@ -20,8 +25,7 @@ export async function getOdpis(
     throw new Error(`Invalid krs number: "${krs}" — expected 1 to 10 digits.`);
   }
 
-  const endpoint = full ? "OdpisPelny" : "OdpisAktualny";
-  const url = `${API_BASE}/${endpoint}/${padKrs(krs)}?rejestr=${registry}&format=json`;
+  const url = getOdpisUrl(krs, registry, full);
 
   await pacer.wait();
 
