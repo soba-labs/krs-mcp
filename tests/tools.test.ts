@@ -5,6 +5,9 @@ import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { buildServer } from "../src/server.js";
 
+const SEARCH_SOURCE = "https://wyszukiwarka-krs-api.ms.gov.pl/api/wyszukiwarka/krs";
+const EXTRACT_SOURCE_PREFIX = "https://api-krs.ms.gov.pl/api/krs/";
+
 const sobalabsSearch = {
   liczbaPodmiotow: 1,
   listaPodmiotow: [
@@ -27,7 +30,7 @@ const odpisFixture = {
       dzial1: {
         danePodmiotu: {
           nazwa: "SOBA LABS PROSTA SPÓŁKA AKCYJNA",
-          identyfikatory: { nip: "8971973376", regon: "54494280900000" },
+          identyfikatory: { nip: "1111111111", regon: "22222222222222" },
         },
         siedzibaIAdres: {
           siedziba: { kraj: "POLSKA" },
@@ -75,6 +78,28 @@ function okFetch(body: unknown, status = 200) {
   return vi.fn(async () => new Response(JSON.stringify(body), { status }));
 }
 
+function expectProvenance(
+  response: unknown,
+  expected: { source: string | RegExp; processing: string },
+) {
+  if (response === null || typeof response !== "object" || !("content" in response)) {
+    throw new TypeError("Expected a completed MCP tool result with content.");
+  }
+  const content = response.content as Array<{ type: string; text: string }>;
+  expect(content).toHaveLength(2);
+  expect(content[1].type).toBe("text");
+
+  const provenance = JSON.parse(content[1].text) as Record<string, string | null>;
+  if (typeof expected.source === "string") {
+    expect(provenance.source).toBe(expected.source);
+  } else {
+    expect(provenance.source).toMatch(expected.source);
+  }
+  expect(provenance.sourceProducedAt).toBeNull();
+  expect(provenance.processing).toBe(expected.processing);
+  expect(provenance.retrievedAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+}
+
 afterEach(() => {
   vi.unstubAllGlobals();
 });
@@ -89,6 +114,8 @@ describe("krs-mcp tools", () => {
       "get_company_full",
       "search_companies",
     ]);
+    expect(tools.every((tool) => tool.annotations?.readOnlyHint === true)).toBe(true);
+    expect(tools.every((tool) => tool.annotations?.openWorldHint === true)).toBe(true);
   });
 
   it("search_companies returns padded KRS number", async () => {
@@ -98,6 +125,10 @@ describe("krs-mcp tools", () => {
     const text = (res.content as Array<{ text: string }>)[0].text;
     expect(text).toContain("0001245101");
     expect(text).toContain("SOBA LABS");
+    expectProvenance(res, {
+      source: SEARCH_SOURCE,
+      processing: "Search results formatted as Markdown by krs-mcp.",
+    });
   });
 
   it("search_companies accepts name/nazwa as aliases for query", async () => {
@@ -155,6 +186,19 @@ describe("krs-mcp tools", () => {
     expect(text.toLowerCase()).toContain("not found");
   });
 
+  it("get_company returns source and processing provenance", async () => {
+    const client = await connect(okFetch(odpisFixture));
+    const res = await client.callTool({
+      name: "get_company",
+      arguments: { krs: "1245101", rejestr: "P" },
+    });
+    expect(res.isError).toBeFalsy();
+    expectProvenance(res, {
+      source: new RegExp(`^${EXTRACT_SOURCE_PREFIX}OdpisAktualny/0001245101\\?`),
+      processing: "Current extract formatted as Markdown by krs-mcp.",
+    });
+  });
+
   it("get_company_full returns the complete semantic JSON with history", async () => {
     const client = await connect(okFetch(fullOdpisFixture));
     const res = await client.callTool({
@@ -166,6 +210,10 @@ describe("krs-mcp tools", () => {
     expect(JSON.parse(text)).toEqual(fullOdpisFixture);
     expect(text).toContain("BOB");
     expect(text).toContain("nrWpisuWykr");
+    expectProvenance(res, {
+      source: new RegExp(`^${EXTRACT_SOURCE_PREFIX}OdpisPelny/0001245101\\?`),
+      processing: "Full extract passed through as JSON by krs-mcp.",
+    });
   });
 
   it("get_board extracts board members", async () => {
@@ -180,6 +228,10 @@ describe("krs-mcp tools", () => {
     expect(text).toContain("PREZES ZARZĄDU");
     expect(text).toContain("ANNA NOWAK");
     expect(text).toContain("SAMOISTNA");
+    expectProvenance(res, {
+      source: new RegExp(`^${EXTRACT_SOURCE_PREFIX}OdpisAktualny/0001245101\\?`),
+      processing: "Extract reduced to board, supervisory-body, and proxy fields by krs-mcp.",
+    });
   });
 
   it("surfaces API errors with status in the message", async () => {

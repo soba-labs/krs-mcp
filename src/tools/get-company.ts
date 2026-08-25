@@ -16,11 +16,15 @@ export function registerGetCompany(server: McpServer) {
       description:
         "Fetch the CURRENT (aktualny) official extract of a Polish company from the KRS registry by its 1-10 digit KRS number. Returns identity, address, board, capital and PKD as markdown.",
       inputSchema,
+      annotations: { readOnlyHint: true, openWorldHint: true },
     },
     async ({ krs, rejestr }) => {
       const result = await getOdpisOrError(krs, rejestr, false);
       if (!result.ok) return textResult(result.error, true);
-      return textResult(formatOdpis(result.odpis, "aktualny"));
+      return textResult(formatOdpis(result.odpis, "aktualny"), false, {
+        source: result.source,
+        processing: "Current extract formatted as Markdown by krs-mcp.",
+      });
     },
   );
 }

@@ -16,11 +16,15 @@ export function registerGetBoard(server: McpServer) {
       description:
         "List the board, supervisory bodies and proxies of a Polish company from its current KRS extract. Resolve the KRS number first with search_companies.",
       inputSchema,
+      annotations: { readOnlyHint: true, openWorldHint: true },
     },
     async ({ krs, rejestr }) => {
       const result = await getOdpisOrError(krs, rejestr, false);
       if (!result.ok) return textResult(result.error, true);
-      return textResult(extractBoardAndProxies(result.odpis));
+      return textResult(extractBoardAndProxies(result.odpis), false, {
+        source: result.source,
+        processing: "Extract reduced to board, supervisory-body, and proxy fields by krs-mcp.",
+      });
     },
   );
 }

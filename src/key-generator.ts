@@ -1,9 +1,5 @@
 /**
- * Offline reproduction of the KRS search frontend's request-header encoder.
- *
- * The algorithm was reverse-engineered from the public search frontend JS
- * bundle (`main.107201e5e6b95da7.js`) and verified live against the endpoint
- * on 2026-08-22.
+ * KRS search request-header encoder.
  *
  * The search endpoint's payload stores KRS at `body.podmiot.krs`, while the
  * frontend interceptor only checks `body.krs`. Its exact embedded value for

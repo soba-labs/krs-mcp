@@ -1,6 +1,6 @@
 import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { searchCompanies } from "../clients/search-api.js";
+import { SEARCH_URL, searchCompanies } from "../clients/search-api.js";
 import { formatSearchResults } from "../format.js";
 import { errorText, textResult } from "./common.js";
 
@@ -62,6 +62,7 @@ export function registerSearchCompanies(server: McpServer) {
       description:
         'Search Polish companies in the KRS (National Court Register) by name or partial name ("query"), KRS, NIP or REGON. Returns matching entities with their padded 10-digit KRS numbers — use this FIRST to resolve a company name to a KRS number before calling get_company / get_company_full / get_board.',
       inputSchema,
+      annotations: { readOnlyHint: true, openWorldHint: true },
     },
     async (args) => {
       try {
@@ -82,7 +83,10 @@ export function registerSearchCompanies(server: McpServer) {
         ]
           .filter(Boolean)
           .join(", ");
-        return textResult(formatSearchResults(result, criteria));
+        return textResult(formatSearchResults(result, criteria), false, {
+          source: SEARCH_URL,
+          processing: "Search results formatted as Markdown by krs-mcp.",
+        });
       } catch (err) {
         return textResult(errorText(err), true);
       }

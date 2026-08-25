@@ -15,11 +15,15 @@ export function registerGetCompanyFull(server: McpServer) {
       description:
         "Fetch the FULL (pelny) official semantic JSON extract of a Polish company from the KRS registry by its 1-10 digit KRS number. Preserves all historical entries. Much larger than the current extract; use get_company unless history is needed.",
       inputSchema,
+      annotations: { readOnlyHint: true, openWorldHint: true },
     },
     async ({ krs, rejestr }) => {
       const result = await getOdpisOrError(krs, rejestr, true);
       if (!result.ok) return textResult(result.error, true);
-      return textResult(JSON.stringify(result.odpis, null, 2));
+      return textResult(JSON.stringify(result.odpis, null, 2), false, {
+        source: result.source,
+        processing: "Full extract passed through as JSON by krs-mcp.",
+      });
     },
   );
 }

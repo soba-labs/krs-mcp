@@ -1,7 +1,7 @@
 import { Pacer } from "../pacer.js";
 import { generateKrsApiKey } from "../key-generator.js";
 
-const SEARCH_URL = "https://wyszukiwarka-krs-api.ms.gov.pl/api/wyszukiwarka/krs";
+export const SEARCH_URL = "https://wyszukiwarka-krs-api.ms.gov.pl/api/wyszukiwarka/krs";
 
 export interface SearchParams {
   name?: string;

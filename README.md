@@ -2,7 +2,7 @@
 
 An [MCP](https://modelcontextprotocol.io) server for the Polish **KRS** (Krajowy Rejestr Sądowy — National Court Register). It lets any MCP-capable AI client search Polish companies by name, KRS, NIP or REGON, and fetch official current and full registry extracts.
 
-All four tools are read-only and require no API key, no account, and no configuration. KRS data is public record.
+All four tools are read-only and require no API key, account, or configuration. KRS data is public record.
 
 ## Tools
 
@@ -15,9 +15,10 @@ All four tools are read-only and require no API key, no account, and no configur
 
 ## How it works
 
-- **Search** goes through the Ministry of Justice's public search service — the same backend that powers [wyszukiwarka-krs.ms.gov.pl](https://wyszukiwarka-krs.ms.gov.pl). The frontend signs its requests with a generated request token; krs-mcp reproduces that algorithm offline, so no credentials are needed.
-- **Extracts (odpisy)** come from the Ministry of Justice's official open API at [api-krs.ms.gov.pl](https://api-krs.ms.gov.pl) — free and keyless. The data is public record (CC0).
+- **Search** uses the Ministry of Justice's public search service, which also powers [wyszukiwarka-krs.ms.gov.pl](https://wyszukiwarka-krs.ms.gov.pl).
+- **Extracts (odpisy)** come from the Ministry of Justice's official, keyless API at [api-krs.ms.gov.pl](https://api-krs.ms.gov.pl).
 - Search results and current extracts are formatted as compact, LLM-friendly markdown. Full extracts remain semantic JSON so no historical entries are discarded.
+- Every successful result includes a second text block containing JSON provenance: the source URL, retrieval time, source-production time when supplied, and a description of krs-mcp's processing. The source services do not currently provide a separate production timestamp, so `sourceProducedAt` is `null` rather than inferred. The full extract remains parseable JSON in the first text block.
 
 ## Setup
 
@@ -65,9 +66,15 @@ npm install && npm run build
 2. `get_company` with `"krs": "0000245961"` → current extract
 3. `get_board` with the same KRS → just the people
 
+## Data reuse and privacy
+
+The Ministry of Justice's [public-sector information reuse conditions](https://www.gov.pl/web/sprawiedliwosc/ponowne-wykorzystywanie) require users to identify the source, the time the information was produced and obtained, and any processing applied to it. krs-mcp adds those disclosure fields to every successful tool result and explicitly marks an unavailable source-production time as `null`. Downstream users remain responsible for preserving the required attribution and complying with applicable privacy and reuse rules.
+
+krs-mcp sends requests only to the Ministry's KRS services. It has no telemetry and does not persist registry responses. Your MCP client may send tool output to its configured model provider; review that provider's privacy terms before processing personal data. The Ministry controls masking in the source responses, and krs-mcp does not independently redact fields in full extracts.
+
 ## Disclaimer
 
-This project is not affiliated with, endorsed by, or connected to the Polish Ministry of Justice (Ministerstwo Sprawiedliwości). Registry data is fetched from public government sources and passed through as-is: personal data in extracts has been masked upstream since the 2023 amendment to the KRS Act. Provided without warranty of any kind.
+This project is not affiliated with, endorsed by, or connected to the Polish Ministry of Justice (Ministerstwo Sprawiedliwości). Registry data is fetched from public government sources. Formatted tools transform or select fields as described above; full extracts are passed through as JSON. Provided without warranty of any kind.
 
 ## License
 

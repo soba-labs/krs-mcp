@@ -4,6 +4,16 @@
   "description": "MCP server for the Polish KRS (National Court Register) - search companies by name, KRS, NIP or REGON and fetch official registry extracts.",
   "type": "module",
   "license": "MIT",
+  "author": "Soba Labs Prosta Spółka Akcyjna (P.S.A.)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/soba-labs/krs-mcp.git"
+  },
+  "homepage": "https://github.com/soba-labs/krs-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/soba-labs/krs-mcp/issues"
+  },
+  "keywords": ["mcp", "krs", "poland", "company-registry"],
   "engines": { "node": ">=18" },
   "main": "dist/index.js",
   "bin": { "krs-mcp": "dist/index.js" },
