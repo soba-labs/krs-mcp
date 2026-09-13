@@ -1,5 +1,6 @@
 import { Pacer } from "../pacer.js";
 import { generateKrsApiKey } from "../key-generator.js";
+import { fetchWithRetry } from "./request.js";
 
 export const SEARCH_URL = "https://wyszukiwarka-krs-api.ms.gov.pl/api/wyszukiwarka/krs";
 
@@ -81,26 +82,38 @@ export async function searchCompanies(
     },
   };
 
-  await pacer.wait();
-
-  const response = await fetchImpl(SEARCH_URL, {
-    method: "POST",
-    headers: {
-      apikey: generateKrsApiKey(),
-      "x-api-key": "TopSecretApiKey",
-      origin: "https://wyszukiwarka-krs.ms.gov.pl",
-      referer: "https://wyszukiwarka-krs.ms.gov.pl/",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(payload),
+  const response = await fetchWithRetry(async (signal) => {
+    await pacer.wait();
+    return fetchImpl(SEARCH_URL, {
+      method: "POST",
+      headers: {
+        apikey: generateKrsApiKey(),
+        "x-api-key": "TopSecretApiKey",
+        origin: "https://wyszukiwarka-krs.ms.gov.pl",
+        referer: "https://wyszukiwarka-krs.ms.gov.pl/",
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      signal,
+    });
   });
 
   if (!response.ok) {
     throw new Error(`KRS search API returned ${response.status}`);
   }
 
-  const body = (await response.json()) as { liczbaPodmiotow?: number; listaPodmiotow?: RawHit[] };
-  const hits = (body.listaPodmiotow ?? []).map((raw) => ({
+  const body = await response.json();
+  if (
+    body === null ||
+    typeof body !== "object" ||
+    typeof (body as Record<string, unknown>).liczbaPodmiotow !== "number" ||
+    !Array.isArray((body as Record<string, unknown>).listaPodmiotow)
+  ) {
+    throw new Error("KRS search API response contract changed");
+  }
+
+  const validatedBody = body as { liczbaPodmiotow: number; listaPodmiotow: RawHit[] };
+  const hits = validatedBody.listaPodmiotow.map((raw) => ({
     krs: padKrs(String(raw.numer ?? "")),
     name: raw.nazwa ?? "",
     city: raw.miejscowosc ?? "",
@@ -109,7 +122,7 @@ export async function searchCompanies(
     isBankruptcy: Boolean(raw.czyUpadlosc),
   }));
 
-  const total = body.liczbaPodmiotow ?? hits.length;
+  const total = validatedBody.liczbaPodmiotow;
   const hasMore = page * pageSize < total;
   return { total, page, hasMore, hits };
 }
