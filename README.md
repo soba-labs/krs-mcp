@@ -2,7 +2,7 @@
 
 An [MCP](https://modelcontextprotocol.io) server for the Polish **KRS** (Krajowy Rejestr Sądowy — National Court Register). It lets any MCP-capable AI client search Polish companies by name, KRS, NIP or REGON, and fetch official current and full registry extracts.
 
-All four tools are read-only and require no API key, account, or configuration. KRS data is public record.
+All four tools are read-only and require no API key, account, or configuration. KRS data is public record. Node.js 22.12 or later is required.
 
 ## Tools
 
@@ -15,10 +15,20 @@ All four tools are read-only and require no API key, account, or configuration. 
 
 ## How it works
 
-- **Search** uses the Ministry of Justice's public search service, which also powers [wyszukiwarka-krs.ms.gov.pl](https://wyszukiwarka-krs.ms.gov.pl).
+- **Search** uses an undocumented endpoint behind the Ministry of Justice's public search website, [wyszukiwarka-krs.ms.gov.pl](https://wyszukiwarka-krs.ms.gov.pl). The endpoint is not part of the documented KRS Open API and may change or reject programmatic access without notice.
 - **Extracts (odpisy)** come from the Ministry of Justice's official, keyless API at [api-krs.ms.gov.pl](https://api-krs.ms.gov.pl).
 - Search results and current extracts are formatted as compact, LLM-friendly markdown. Full extracts remain semantic JSON so no historical entries are discarded.
 - Every successful result includes a second text block containing JSON provenance: the source URL, retrieval time, source-production time when supplied, and a description of krs-mcp's processing. The source services do not currently provide a separate production timestamp, so `sourceProducedAt` is `null` rather than inferred. The full extract remains parseable JSON in the first text block.
+
+## Reliability
+
+Requests time out after 15 seconds. Network errors, HTTP 429 responses, and server errors are retried twice with short delays. Authentication or permission failures are returned immediately.
+
+A daily GitHub Actions check verifies company-name search and the official extract API against a known public Soba Labs record. A contract change or access failure opens or updates one incident issue. Temporary upstream outages fail the check without creating an issue. Maintainers can also run `npm run check:live` manually.
+
+GitHub may disable scheduled workflows in a public repository after 60 days without repository activity. If this repository becomes inactive, a maintainer must [re-enable the workflow](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/disable-and-enable-workflows) or run it manually.
+
+The live check detects breakage; it does not make the undocumented search endpoint official or supported. A `403` requires human review. Maintainers and repair agents must not bypass new access controls automatically. The official extract tools remain usable if only name search breaks.
 
 ## Setup
 

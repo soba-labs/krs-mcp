@@ -1,4 +1,5 @@
 import { Pacer } from "../pacer.js";
+import { fetchWithRetry } from "./request.js";
 
 const API_BASE = "https://api-krs.ms.gov.pl/api/krs";
 
@@ -27,13 +28,15 @@ export async function getOdpis(
 
   const url = getOdpisUrl(krs, registry, full);
 
-  await pacer.wait();
-
-  const response = await fetchImpl(url, {
-    headers: {
-      "user-agent": "krs-mcp/0.1.0",
-      accept: "application/json",
-    },
+  const response = await fetchWithRetry(async (signal) => {
+    await pacer.wait();
+    return fetchImpl(url, {
+      headers: {
+        "user-agent": "krs-mcp/0.1.0",
+        accept: "application/json",
+      },
+      signal,
+    });
   });
 
   if (response.status === 404) {
@@ -44,5 +47,10 @@ export async function getOdpis(
     throw new Error(`KRS odpisy API returned ${response.status}`);
   }
 
-  return (await response.json()) as Record<string, unknown>;
+  const body = await response.json();
+  if (body === null || typeof body !== "object" || Array.isArray(body)) {
+    throw new Error("KRS odpisy API response contract changed");
+  }
+
+  return body as Record<string, unknown>;
 }

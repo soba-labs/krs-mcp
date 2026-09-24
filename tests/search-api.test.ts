@@ -88,6 +88,28 @@ describe("searchCompanies", () => {
     await expect(
       searchCompanies({ name: "x" }, f as unknown as typeof fetch),
     ).rejects.toThrow(/search API returned 403/);
+    expect(f).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries a transient search failure", async () => {
+    const statuses = [503, 200];
+    const f = vi.fn(async () =>
+      new Response(JSON.stringify(sampleResponse), { status: statuses.shift() }),
+    );
+
+    await expect(
+      searchCompanies({ name: "Soba Labs" }, f as unknown as typeof fetch),
+    ).resolves.toMatchObject({ total: 17 });
+    expect(f).toHaveBeenCalledTimes(2);
+  });
+
+  it("rejects a changed response contract", async () => {
+    await expect(
+      searchCompanies(
+        { name: "Soba Labs" },
+        okFetch({ unexpected: true }) as unknown as typeof fetch,
+      ),
+    ).rejects.toThrow(/response contract/i);
   });
 
   it("requires at least one search criterion", async () => {

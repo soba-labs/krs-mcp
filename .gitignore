@@ -143,6 +143,7 @@ vite.config.ts.timestamp-*
 .vite/
 .superpowers/
 docs/
+.krs-health-result.json
 # Test fixtures: odpis captures are fetched locally, never committed
 tests/fixtures/*
 !tests/fixtures/key-vectors.json

@@ -30,9 +30,33 @@ describe("getOdpis", () => {
     await expect(getOdpis("9999999999", undefined, false, f as unknown as typeof fetch)).resolves.toBeNull();
   });
 
-  it("throws with status on other errors", async () => {
-    const f = vi.fn(async (_url: unknown, _init?: unknown) => new Response("boom", { status: 500 }));
-    await expect(getOdpis("0001245101", undefined, false, f as unknown as typeof fetch)).rejects.toThrow(/500/);
+  it("retries a transient API failure", async () => {
+    const statuses = [503, 200];
+    const f = vi.fn(async () =>
+      new Response(JSON.stringify({ podmiot: {} }), { status: statuses.shift() }),
+    );
+
+    await expect(
+      getOdpis("0001245101", undefined, false, f as unknown as typeof fetch),
+    ).resolves.toEqual({ podmiot: {} });
+    expect(f).toHaveBeenCalledTimes(2);
+  });
+
+  it("throws with status after transient retries are exhausted", async () => {
+    const f = vi.fn(async () => new Response("boom", { status: 500 }));
+
+    await expect(
+      getOdpis("0001245101", undefined, false, f as unknown as typeof fetch),
+    ).rejects.toThrow(/500/);
+    expect(f).toHaveBeenCalledTimes(3);
+  });
+
+  it("rejects a changed response contract", async () => {
+    const f = vi.fn(async () => new Response(JSON.stringify(["unexpected"]), { status: 200 }));
+
+    await expect(
+      getOdpis("0001245101", undefined, false, f as unknown as typeof fetch),
+    ).rejects.toThrow(/response contract/i);
   });
 
   it("validates krs input", async () => {
