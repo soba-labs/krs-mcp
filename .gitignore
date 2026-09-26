@@ -149,3 +149,5 @@ tests/fixtures/*
 !tests/fixtures/key-vectors.json
 !tests/fixtures/odpis-aktualny-synthetic.json
 !tests/fixtures/odpis-pelny-synthetic.json
+__pycache__/
+*.py[cod]
