@@ -118,6 +118,18 @@ describe("krs-mcp tools", () => {
     expect(tools.every((tool) => tool.annotations?.openWorldHint === true)).toBe(true);
   });
 
+  it("search_companies publishes its arguments in the tool input schema", async () => {
+    const client = await connect(okFetch(sobalabsSearch));
+    const { tools } = await client.listTools();
+    const search = tools.find((tool) => tool.name === "search_companies");
+    const properties = search?.inputSchema.properties as Record<string, { type?: string }>;
+    for (const key of ["query", "krs", "nip", "regon", "registries", "page", "pageSize"]) {
+      expect(properties, key).toHaveProperty(key);
+    }
+    expect(properties.page.type).toBe("integer");
+    expect(properties.registries.type).toBe("array");
+  });
+
   it("search_companies returns padded KRS number", async () => {
     const client = await connect(okFetch(sobalabsSearch));
     const res = await client.callTool({ name: "search_companies", arguments: { query: "Soba Labs" } });
