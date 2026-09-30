@@ -1,5 +1,5 @@
 import { Pacer } from "../pacer.js";
-import { fetchWithRetry } from "./request.js";
+import { fetchWithRetry, readJson } from "./request.js";
 
 const API_BASE = "https://api-krs.ms.gov.pl/api/krs";
 
@@ -47,7 +47,7 @@ export async function getOdpis(
     throw new Error(`KRS odpisy API returned ${response.status}`);
   }
 
-  const body = await response.json();
+  const body = await readJson(response);
   if (body === null || typeof body !== "object" || Array.isArray(body)) {
     throw new Error("KRS odpisy API response contract changed");
   }
