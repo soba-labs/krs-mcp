@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchWithRetry } from "../src/clients/request.js";
+import { fetchWithRetry, readJson } from "../src/clients/request.js";
 
 afterEach(() => {
   vi.useRealTimers();
@@ -44,5 +44,31 @@ describe("fetchWithRetry", () => {
 
     await assertion;
     expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps the timeout armed while the response body is read", async () => {
+    vi.useFakeTimers();
+    const request = vi.fn(
+      async (signal: AbortSignal) =>
+        new Response(
+          new ReadableStream({
+            start(controller) {
+              // A body that never finishes unless the request signal aborts it.
+              signal.addEventListener("abort", () => {
+                const error = new Error("aborted");
+                error.name = "AbortError";
+                controller.error(error);
+              });
+            },
+          }),
+          { status: 200 },
+        ),
+    );
+
+    const response = await fetchWithRetry(request, { timeoutMs: 10, retryDelaysMs: [] });
+    const assertion = expect(readJson(response)).rejects.toThrow("timed out");
+    await vi.advanceTimersByTimeAsync(20);
+
+    await assertion;
   });
 });

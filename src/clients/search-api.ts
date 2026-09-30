@@ -1,6 +1,6 @@
 import { Pacer } from "../pacer.js";
 import { generateKrsApiKey } from "../key-generator.js";
-import { fetchWithRetry } from "./request.js";
+import { fetchWithRetry, readJson } from "./request.js";
 
 export const SEARCH_URL = "https://wyszukiwarka-krs-api.ms.gov.pl/api/wyszukiwarka/krs";
 
@@ -88,6 +88,8 @@ export async function searchCompanies(
       method: "POST",
       headers: {
         apikey: generateKrsApiKey(),
+        // Not a secret: the fixed value the Ministry's public search website sends
+        // with every request from its own frontend.
         "x-api-key": "TopSecretApiKey",
         origin: "https://wyszukiwarka-krs.ms.gov.pl",
         referer: "https://wyszukiwarka-krs.ms.gov.pl/",
@@ -102,7 +104,7 @@ export async function searchCompanies(
     throw new Error(`KRS search API returned ${response.status}`);
   }
 
-  const body = await response.json();
+  const body = await readJson(response);
   if (
     body === null ||
     typeof body !== "object" ||
