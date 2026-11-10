@@ -82,6 +82,8 @@ npm install && npm run build
 2. `get_company` with `"krs": "0000245961"` → current extract
 3. `get_board` with the same KRS → just the people
 
+Need an MCP server for your own registry, CRM or internal data? [Talk to Soba Labs](https://sobalabs.ai/contact/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-inline).
+
 ## Data reuse and privacy
 
 The Ministry of Justice's [public-sector information reuse conditions](https://www.gov.pl/web/sprawiedliwosc/ponowne-wykorzystywanie) require users to identify the source, the time the information was produced and obtained, and any processing applied to it. krs-mcp adds those disclosure fields to every successful tool result and explicitly marks an unavailable source-production time as `null`. Downstream users remain responsible for preserving the required attribution and complying with applicable privacy and reuse rules.
@@ -102,4 +104,4 @@ This project is not affiliated with, endorsed by, or connected to the Polish Min
 
 ## Built by Soba Labs
 
-krs-mcp is free and open source under the MIT license, built and maintained by [Soba Labs](https://sobalabs.ai/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-footer), an AI-native software development agency that builds and operates production agentic systems. If you need an MCP server or an agent built on your own data, write to [contact@sobalabs.ai](mailto:contact@sobalabs.ai).
+krs-mcp is free and open source under the MIT license, built and maintained by [Soba Labs](https://sobalabs.ai/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-footer), an AI-native software development agency that builds and operates production agentic systems. If you need an MCP server or an agent built on your own data, [talk to Soba Labs](https://sobalabs.ai/contact/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-footer) or write to [contact@sobalabs.ai](mailto:contact@sobalabs.ai).
