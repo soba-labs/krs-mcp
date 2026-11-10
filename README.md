@@ -4,7 +4,7 @@
 
 # krs-mcp
 
-[![CI](https://github.com/soba-labs/krs-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/soba-labs/krs-mcp/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-ba9768?style=flat)](https://github.com/soba-labs/krs-mcp/blob/main/LICENSE) [![Sponsored by Soba Labs](https://img.shields.io/badge/sponsored%20by-Soba%20Labs-132a3c?style=flat)](https://sobalabs.ai/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-badge)
+[![CI](https://github.com/soba-labs/krs-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/soba-labs/krs-mcp/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-ba9768?style=flat)](https://github.com/soba-labs/krs-mcp/blob/main/LICENSE) [![Built by Soba Labs](https://img.shields.io/badge/built%20by-Soba%20Labs-132a3c?style=flat)](https://sobalabs.ai/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-badge)
 
 An [MCP](https://modelcontextprotocol.io) server for the Polish **KRS** (Krajowy Rejestr Sądowy — National Court Register). It lets any MCP-capable AI client search Polish companies by name, KRS, NIP or REGON, and fetch official current and full registry extracts.
 
