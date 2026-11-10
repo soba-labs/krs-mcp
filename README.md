@@ -1,5 +1,7 @@
 # krs-mcp
 
+[![Built by Soba Labs](https://img.shields.io/badge/built%20by-Soba%20Labs-14273e?style=flat)](https://sobalabs.ai/open-source/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-badge)
+
 An [MCP](https://modelcontextprotocol.io) server for the Polish **KRS** (Krajowy Rejestr Sądowy — National Court Register). It lets any MCP-capable AI client search Polish companies by name, KRS, NIP or REGON, and fetch official current and full registry extracts.
 
 All four tools are read-only and require no API key, account, or configuration. KRS data is public record. Node.js 22.12 or later is required.
@@ -90,6 +92,6 @@ This project is not affiliated with, endorsed by, or connected to the Polish Min
 
 [MIT](LICENSE)
 
----
+## Built by Soba Labs
 
-Built and maintained by [Soba Labs](https://sobalabs.ai).
+krs-mcp is free and open source under the MIT license, built and maintained by [Soba Labs](https://sobalabs.ai/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-footer), an AI-native software development agency that builds and operates production agentic systems. If you need an MCP server or an agent built on your own data, write to [contact@sobalabs.ai](mailto:contact@sobalabs.ai).
