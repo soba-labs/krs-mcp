@@ -4,7 +4,7 @@
 
 # krs-mcp
 
-[![CI](https://github.com/soba-labs/krs-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/soba-labs/krs-mcp/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-ba9768?style=flat)](https://github.com/soba-labs/krs-mcp/blob/main/LICENSE) [![Built by Soba Labs](https://img.shields.io/badge/built%20by-Soba%20Labs-132a3c?style=flat)](https://sobalabs.ai/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-badge)
+[![npm](https://img.shields.io/npm/v/krs-mcp?style=flat)](https://www.npmjs.com/package/krs-mcp) [![npm downloads](https://img.shields.io/npm/dm/krs-mcp?style=flat)](https://www.npmjs.com/package/krs-mcp) [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-io.github.soba--labs%2Fkrs--mcp-132a3c?style=flat)](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.soba-labs/krs-mcp) [![CI](https://github.com/soba-labs/krs-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/soba-labs/krs-mcp/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/license-MIT-ba9768?style=flat)](https://github.com/soba-labs/krs-mcp/blob/main/LICENSE) [![Built by Soba Labs](https://img.shields.io/badge/built%20by-Soba%20Labs-132a3c?style=flat)](https://sobalabs.ai/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-badge)
 
 An [MCP](https://modelcontextprotocol.io) server for the Polish **KRS** (Krajowy Rejestr Sądowy — National Court Register). It lets any MCP-capable AI client search Polish companies by name, KRS, NIP or REGON, and fetch official current and full registry extracts.
 
@@ -53,7 +53,6 @@ Add to your MCP configuration:
 }
 ```
 
-(Once the package is published to npm. Until then, use the from-source setup below.)
 
 ### From source
 
