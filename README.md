@@ -99,6 +99,7 @@ This project is not affiliated with, endorsed by, or connected to the Polish Min
 
 ## Read more
 
+- [KRS MCP server: look up Polish companies from Claude](https://sobalabs.ai/blog/krs-mcp-server-polish-company-lookup/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-read-more): why we built krs-mcp, setup, and a worked lookup.
 - [What is MCP?](https://sobalabs.ai/glossary/mcp/?utm_source=github&utm_medium=referral&utm_campaign=krs-mcp&utm_content=readme-read-more): the Model Context Protocol in plain language.
 
 ## Built by Soba Labs
