@@ -1,0 +1,40 @@
+# Publishes server.json to the official MCP Registry (registry.modelcontextprotocol.io).
+# Run it by hand after publishing a new version to npm. GitHub Actions OIDC proves the
+# soba-labs org owns the io.github.soba-labs namespace, so no token or secret is stored.
+name: Publish to MCP Registry
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  MCP_PUBLISHER_VERSION: v1.8.9
+  # sha256 of mcp-publisher_linux_amd64.tar.gz from that release's checksums file
+  MCP_PUBLISHER_SHA256: 4d527ca8f1ced0394c962dc925c2a4a4addef441cbefd62501c875e9481823a8
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check server.json matches package.json
+        run: |
+          test "$(jq -r .version server.json)" = "$(jq -r .version package.json)"
+          test "$(jq -r .name server.json)" = "$(jq -r .mcpName package.json)"
+
+      - name: Install mcp-publisher
+        run: |
+          curl -sSL -o mp.tgz "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${MCP_PUBLISHER_SHA256}  mp.tgz" | sha256sum -c -
+          tar xzf mp.tgz mcp-publisher
+          rm mp.tgz
+
+      - name: Log in with GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish
+        run: ./mcp-publisher publish
