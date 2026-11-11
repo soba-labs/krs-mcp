@@ -1,6 +1,7 @@
 {
   "name": "krs-mcp",
   "version": "0.1.0",
+  "mcpName": "io.github.soba-labs/krs-mcp",
   "description": "MCP server for the Polish KRS (National Court Register) - search companies by name, KRS, NIP or REGON and fetch official registry extracts.",
   "type": "module",
   "license": "MIT",
@@ -9,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/soba-labs/krs-mcp.git"
   },
-  "homepage": "https://github.com/soba-labs/krs-mcp#readme",
+  "homepage": "https://sobalabs.ai/open-source/",
   "bugs": {
     "url": "https://github.com/soba-labs/krs-mcp/issues"
   },
