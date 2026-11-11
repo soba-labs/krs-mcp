@@ -46,7 +46,7 @@ A search `403` means the Ministry changed access controls: it requires human rev
 
 - ESM with `module: Node16`: relative imports in `src/` must end in `.js`.
 - The version is hardcoded in `package.json` (and `package-lock.json`), `src/server.ts`, the user agent in `src/clients/krs-api.ts` and `server.json` (twice); bump them together. The `release.yml` workflow refuses to publish if they differ.
-- Releases run from GitHub Actions only: start the `Release` workflow by hand. It publishes to npm through npm trusted publishing (OIDC, no token) and then to the official MCP Registry (GitHub OIDC). Never publish from a laptop or VM.
+- Releases run from GitHub Actions only: start the `Release` workflow by hand. The first run stages the npm package through npm trusted publishing (OIDC, no token); a maintainer approves it on npmjs.com under Staged Packages; a second run sees the version live and publishes to the official MCP Registry (GitHub OIDC). Never publish from a laptop or VM.
 - Tests must use synthetic fixtures and never touch live services. `tests/fixtures/*` is gitignored except the three committed synthetic files; never commit live registry captures or personal data.
 - The live check must stay a single narrow query for the known record; do not add broad queries or personal data to it.
 - `docs/` and `.superpowers/` are gitignored local working material, not part of the project.

@@ -1,6 +1,7 @@
-# Publishes a release: the npm package first, then server.json to the official MCP Registry
-# (registry.modelcontextprotocol.io). Run it by hand after bumping the version everywhere
-# (see AGENTS.md). Both steps authenticate with GitHub Actions OIDC: npm through its trusted
+# Publishes a release in two runs. Run 1 stages the npm package; a maintainer approves it
+# on npmjs.com (Staged Packages, with 2FA). Run 2 finds the version live on npm and publishes
+# server.json to the official MCP Registry (registry.modelcontextprotocol.io). Bump the
+# version everywhere first (see AGENTS.md). Both steps authenticate with GitHub Actions OIDC: npm through its trusted
 # publisher setting for this workflow file, the registry by proving the soba-labs org owns
 # the io.github.soba-labs namespace. No token or secret is stored.
 name: Release
@@ -43,18 +44,23 @@ jobs:
           npm ci
           npm test
 
-      # Trusted publishing needs npm 11.5.1 or later.
-      - name: Publish to npm
+      # Trusted publishing needs npm 11.5.1 or later. The trusted publisher allows staging
+      # only, so nothing goes public until a maintainer approves it on npmjs.com.
+      - name: Stage on npm unless the version is already live
+        id: npm
         run: |
           v="$(jq -r .version package.json)"
           if npm view "krs-mcp@$v" version >/dev/null 2>&1; then
-            echo "krs-mcp@$v is already on npm, skipping"
+            echo "krs-mcp@$v is live on npm, continuing to the MCP Registry"
           else
             npm install -g npm@11
-            npm publish --access public
+            npm stage publish --access public
+            echo "staged=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::krs-mcp@$v is staged. Approve it on npmjs.com (Staged Packages), then run this workflow again to publish to the MCP Registry."
           fi
 
       - name: Install mcp-publisher
+        if: steps.npm.outputs.staged != 'true'
         run: |
           curl -sSL -o mp.tgz "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
           echo "${MCP_PUBLISHER_SHA256}  mp.tgz" | sha256sum -c -
@@ -62,7 +68,9 @@ jobs:
           rm mp.tgz
 
       - name: Log in to the MCP Registry with GitHub OIDC
+        if: steps.npm.outputs.staged != 'true'
         run: ./mcp-publisher login github-oidc
 
       - name: Publish to the MCP Registry
+        if: steps.npm.outputs.staged != 'true'
         run: ./mcp-publisher publish
