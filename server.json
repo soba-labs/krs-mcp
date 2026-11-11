@@ -2,16 +2,17 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "io.github.soba-labs/krs-mcp",
   "description": "Polish KRS company register: search by name, KRS, NIP or REGON and fetch official extracts.",
+  "websiteUrl": "https://sobalabs.ai/open-source/",
   "repository": {
     "url": "https://github.com/soba-labs/krs-mcp",
     "source": "github"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "krs-mcp",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "transport": {
         "type": "stdio"
       }

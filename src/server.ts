@@ -5,7 +5,7 @@ import { registerGetCompanyFull } from "./tools/get-company-full.js";
 import { registerSearchCompanies } from "./tools/search-companies.js";
 
 export function buildServer(): McpServer {
-  const server = new McpServer({ name: "krs-mcp", version: "0.1.0" });
+  const server = new McpServer({ name: "krs-mcp", version: "0.1.1" });
   registerSearchCompanies(server);
   registerGetCompany(server);
   registerGetCompanyFull(server);

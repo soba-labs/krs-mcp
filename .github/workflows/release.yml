@@ -1,0 +1,68 @@
+# Publishes a release: the npm package first, then server.json to the official MCP Registry
+# (registry.modelcontextprotocol.io). Run it by hand after bumping the version everywhere
+# (see AGENTS.md). Both steps authenticate with GitHub Actions OIDC: npm through its trusted
+# publisher setting for this workflow file, the registry by proving the soba-labs org owns
+# the io.github.soba-labs namespace. No token or secret is stored.
+name: Release
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  MCP_PUBLISHER_VERSION: v1.8.9
+  # sha256 of mcp-publisher_linux_amd64.tar.gz from that release's checksums file
+  MCP_PUBLISHER_SHA256: 4d527ca8f1ced0394c962dc925c2a4a4addef441cbefd62501c875e9481823a8
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - name: Check every version string matches package.json
+        run: |
+          v="$(jq -r .version package.json)"
+          test "$(jq -r .version server.json)" = "$v"
+          test "$(jq -r '.packages[0].version' server.json)" = "$v"
+          test "$(jq -r .name server.json)" = "$(jq -r .mcpName package.json)"
+          test "$(jq -r .version package-lock.json)" = "$v"
+          grep -q "version: \"$v\"" src/server.ts
+          grep -q "krs-mcp/$v" src/clients/krs-api.ts
+
+      - name: Install, test
+        run: |
+          npm ci
+          npm test
+
+      # Trusted publishing needs npm 11.5.1 or later.
+      - name: Publish to npm
+        run: |
+          v="$(jq -r .version package.json)"
+          if npm view "krs-mcp@$v" version >/dev/null 2>&1; then
+            echo "krs-mcp@$v is already on npm, skipping"
+          else
+            npm install -g npm@11
+            npm publish --access public
+          fi
+
+      - name: Install mcp-publisher
+        run: |
+          curl -sSL -o mp.tgz "https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}/mcp-publisher_linux_amd64.tar.gz"
+          echo "${MCP_PUBLISHER_SHA256}  mp.tgz" | sha256sum -c -
+          tar xzf mp.tgz mcp-publisher
+          rm mp.tgz
+
+      - name: Log in to the MCP Registry with GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish to the MCP Registry
+        run: ./mcp-publisher publish

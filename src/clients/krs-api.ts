@@ -32,7 +32,7 @@ export async function getOdpis(
     await pacer.wait();
     return fetchImpl(url, {
       headers: {
-        "user-agent": "krs-mcp/0.1.0",
+        "user-agent": "krs-mcp/0.1.1",
         accept: "application/json",
       },
       signal,
